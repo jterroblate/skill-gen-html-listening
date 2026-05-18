@@ -339,6 +339,21 @@ function switchMode(mode) {{
 
 function checkAnswers() {{
   var correct = 0, total = 0;
+  var notesInputs = document.querySelectorAll(".notes-fill");
+  if (notesInputs.length > 0) {{
+    for (var ni = 0; ni < notesInputs.length; ni++) {{
+      total++;
+      var inp = notesInputs[ni];
+      var ans = inp.getAttribute("data-ans");
+      var val = inp.value.trim().toLowerCase();
+      if (val === ans.toLowerCase()) {{
+        inp.classList.add("correct"); inp.classList.remove("wrong");
+        correct++;
+      }} else {{
+        inp.classList.add("wrong"); inp.classList.remove("correct");
+      }}
+    }}
+  }}
   var blocks = document.querySelectorAll(".q-block");
   for (var i = 0; i < blocks.length; i++) {{
     total++;
@@ -398,7 +413,12 @@ function checkAnswers() {{
 }}
 
 function revealAnswers() {{
-  var blocks = document.querySelectorAll(".q-block");
+    document.querySelectorAll(".notes-fill").forEach(function(inp) {{
+    var ans = inp.getAttribute("data-ans");
+    inp.value = ans;
+    inp.classList.add("correct"); inp.classList.remove("wrong");
+  }});
+var blocks = document.querySelectorAll(".q-block");
   for (var i = 0; i < blocks.length; i++) {{
     var b = blocks[i];
     var qtype = b.getAttribute("data-qtype");
@@ -437,7 +457,10 @@ function revealAnswers() {{
 }}
 
 function resetAnswers() {{
-  var blocks = document.querySelectorAll(".q-block");
+    document.querySelectorAll(".notes-fill").forEach(function(inp) {{
+    inp.value = ""; inp.classList.remove("correct","wrong");
+  }});
+var blocks = document.querySelectorAll(".q-block");
   for (var i = 0; i < blocks.length; i++) {{
     var b = blocks[i];
     var qtype = b.getAttribute("data-qtype");
