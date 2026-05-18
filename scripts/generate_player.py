@@ -25,14 +25,18 @@ import argparse
 #  Question type helpers
 # ──────────────────────────────────────────────
 
-def render_fill(num, text, seg):
-    """Fill-in: <input> with data-ans."""
-    # Extract answer from embedded data-ans attribute
+def render_fill(num, text, seg, answer=""):
+    """Fill-in: <input> with data-ans.
+    Replaces _____ with an input field, or appends one at the end.
+    """
     import re
-    m = re.search(r'data-ans="([^"]+)"', text)
-    ans = m.group(1) if m else ""
-    return f'''<div class="q-block" data-seg="{seg}" data-qtype="fill" data-ans="{ans}">
-<div class="q-text"><span class="q-num">{num}.</span> {text}</div>
+    blank = '<input class="fill-input" data-ans="%s" placeholder="..." autocomplete="off">' % answer
+    if '_____' in text:
+        filled = text.replace('_____', blank, 1)
+    else:
+        filled = text + ' ' + blank
+    return f'''<div class="q-block" data-seg="{seg}" data-qtype="fill" data-ans="{answer}">
+<div class="q-text"><span class="q-num">{num}.</span> {filled}</div>
 <button class="seek-btn-inline" onclick="playSegment({seg})">▶ 跳至音频</button>
 </div>'''
 
@@ -84,7 +88,7 @@ def build_html(title, mp3_path, timing, questions, sentences, q_seg):
         elif qtype == "mcq_multi":
             q_blocks.append(render_mcq_multi(num, q["stem"], q["options"], q["answer"], seg))
         else:
-            q_blocks.append(render_fill(num, q["text"], seg))
+            q_blocks.append(render_fill(num, q["text"], seg, q.get("answer", "")))
     
     q_html = "\n".join(q_blocks)
     

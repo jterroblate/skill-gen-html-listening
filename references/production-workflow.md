@@ -138,18 +138,66 @@ This links Question 1 to the 4th audio segment (index 3).
 
 ## Phase 3: Audio Generation
 
-### 3a. Voice Assignment
+### 3a. Voice Assignment — Quality & Scenario Awareness
 
-| Character Type | Voice | Voice ID |
-|---------------|-------|----------|
-| Narrator (female, US) | Bella | `hpp4J3VqNfWAUOO0d1Us` |
-| Male, US, authoritative | Michael | `flq6f7yk4E4fJM5XTYuZ` |
-| Female, UK, warm professional | Rachel | `21m00Tcm4TlvDq8ikWAM` |
-| Female, US, bright | Bella | `hpp4J3VqNfWAUOO0d1Us` |
-| Female, UK | Lily | `pFZP5JQG7iQjIQuC4Bku` |
-| Female, US, professional | Matilda | `XrExE9yKIg1WjnnlVkGX` |
+#### Quality-Tiered Voice Pool
 
-**Gender rule:** Match speaker gender. Male character → male voice. Female character → female voice.
+ElevenLabs 有数十种 premade voices，**主动选择更高质量**的新声线，而非固守原来的 5 个缺省声线。
+
+| Tier | Voice | Gender | Accent | Voice ID | 适合场景 |
+|------|-------|--------|--------|----------|----------|
+| **T1** | **Juniper** | F | US | `aMSt68OGf4xUZAnLpTU8` | Podcast/教育/专业角色 (最高质量 8/8) |
+| **T1** | **Eric** | M | US | `cjVigY5qzO86Huf0OWal` | S1 接待/客服 (smooth trustworthy 7/7) |
+| **T1** | **Will** | M | US | `bIHbv24MWmeRgasZH58o` | S3 学生 (relaxed conversational 7/7) |
+| **T1** | **Jessica** | F | US | `cgSgspJ2msm6clMCkdW9` | S1/S3 年轻女角色 (playful bright 7/7) |
+| **T1** | **Bella** | F | US | `hpp4J3VqNfWAUOO0d1Us` | 旁白/职业女性 (warm professional 7/7) |
+| **T1** | **Daniel** | M | UK | `onwK4e9ZLuTAKqWW03F9` | S2 电台/S4 讲座 (steady broadcaster 8/8) |
+| **T1** | **Alice** | F | UK | `Xb7hH8MSUJpSbSDYk0k2` | S4 学术讲座 (clear educator 7/7) |
+| **T1** | **George** | M | UK | `JBFqnCBsd6RMkjVDRZzb` | S2 导游/S4 讲师 (warm storyteller 7/7) |
+| T2 | Michael | M | US | `flq6f7yk4E4fJM5XTYuZ` | 补充 US 男声 |
+| T2 | Matilda | F | US | `XrExE9yKIg1WjnnlVkGX` | 通⽤专业女性 |
+| T2 | Laura | F | US | `FGY2WhTYpPnrIDTdsKH5` | 年轻热情角色 |
+| T2 | Rachel | F | UK | `21m00Tcm4TlvDq8ikWAM` | 补充 UK 女声 (warm professional) |
+| T2 | Lily | F | UK | `pFZP5JQG7iQjIQuC4Bku` | 补充 UK 女声 (velvety) |
+| T2 | River | N | US | `SAz9YHcvj6GT2YYXdXww` | 旁白 (neutral 8/8) |
+| T2 | Roger | M | US | `CwhRBWXzGAHq8TQ4Fs17` | 通⽤男声 (laid-back) |
+| T2 | Brian | M | US | `nPczCjzI2devNBz1zQrb` | 中年男声 (deep resonant) |
+| T3 | Chris | M | US | `iP95p4xoKVk53GoZ742B` | 备选男声 |
+| T3 | Charlie(AU) | M | AU | `IKne3meq5aSn9XLyUdCD` | 备选 澳音点缀 |
+
+**Tier ⚠ 避免使用：** Callum (husky trickster), Harry (fierce warrior), Adam (dominant/firm) — 太特色化/卡通化。
+
+#### ⚠️ Scenario Gender Awareness（角色性别暗示）
+
+IELTS 听力中不同角色有默认的社会性别关联，**不可为了凑 50/50 而违背角色现实性别**。
+
+常见 IELTS 场景默认性别：
+
+| 角色 | 默认性别 | 说明 |
+|------|---------|------|
+| Nurse / Healthcare assistant | Female | IELTS 惯例 |
+| Receptionist (hotel/clinic/office) | Female | IELTS 惯例 |
+| Librarian | Female | IELTS 惯例 |
+| Doctor / GP | Male | C19/C20 惯例 |
+| Construction / Manual worker | Male | 现实主流 |
+| Lecturer / Professor | M or F | 均可，视学科语境分配 |
+| Tour guide | M or F | 均可 |
+| Radio host | M or F | 均可 |
+| Student | M or F | 均可 |
+| Travel agent | Female | C19/C20 惯例 |
+
+**操作流程：**
+1. 先根据场景确定各角色的合理性别
+2. 在剩余可用声线中选择匹配的男/女声线
+3. 最后检查整体男女比例；若偏差过大，调整无强性别暗示的角色
+
+#### Voice Selection Rules
+
+1. **Tier 1 优先** — 每 Section 至少 1 个 Tier 1，整单元 Tier 1 ≥ 60%
+2. **Scenario gender first** — 角色现实性别 > 凑 50/50 比例
+3. **Tier 3 最多 1 次** / 单元
+4. **避免列表中的声线**禁止使用
+5. **跨单元轮换** — 每 2 个单元更换主要声线
 
 ### 3b. TTS Generation
 - Model: `eleven_turbo_v2_5` (fast, good quality)
@@ -176,6 +224,8 @@ This links Question 1 to the 4th audio segment (index 3).
 - [ ] No overlapping speech
 - [ ] No silence gaps
 - [ ] Voice matches character gender
+- [ ] Scenario gender: 护士/护理没设为男声, 建筑工人没设为女声
+- [ ] Voice quality: Tier 1 ≥ 60%, 无 Tier ⚠ 声线
 - [ ] ffprobe duration matches expected
 
 ---
@@ -267,6 +317,8 @@ Run THIS checklist before delivering ANY listening set:
 [ ] All fill-in answers are VERBATIM from transcript
 [ ] Teacher DOCX matches student DOCX + answers inline
 [ ] Audio: 3-4 min per section, correct voices, no errors
+[ ] Scenario gender尊重: 每角色的性别符合现实场景（护士/护工≠男声）
+[ ] Voice quality: 整单元 Tier 1 ≥ 60%, 无 Tier ⚠ 声线
 [ ] All HTMLs pass 8-point validation
 [ ] Files in correct directory (verify with `ls -la`)
 [ ] Browser cache test: open at least one HTML to confirm
@@ -299,33 +351,18 @@ Run THIS checklist before delivering ANY listening set:
 | 16 | Answer reveals placed outside dd-items | Unclear which answer matches which item | Place answer-reveal INSIDE each dd-item, right after the dropzone. |
 | 17 | S2/S3 action buttons missing onclick attributes | Buttons do nothing when clicked | Verify all 3 buttons have onclick="checkAnswers();ddCheck()" (etc.) after any HTML edit. |
 
-### 3e. Voice Diversity Rules (CRITICAL)
+### 3e. Voice Diversity & Quality Rules (CRITICAL)
 **Balance is by total character slots across all 4 sections**, not by section count.
 A dialogue scene with 2 characters counts both toward the total.
 
-**Available voices:**
-| Voice | Gender | Accent | Voice ID |
-|-------|--------|--------|----------|
-| Michael | Male | US | `flq6f7yk4E4fJM5XTYuZ` |
-| Bella | Female | US | `hpp4J3VqNfWAUOO0d1Us` |
-| Matilda | Female | US | `XrExE9yKIg1WjnnlVkGX` |
-| Rachel | Female | UK | `21m00Tcm4TlvDq8ikWAM` |
-| Lily | Female | UK | `pFZP5JQG7iQjIQuC4Bku` |
-
-**Rules:**
+**Rules (summary — full details at §3a):**
 1. **Same voice cannot play two different characters** (even across sections)
 2. Total character slots ≈ **50/50 male/female**
 3. Total character slots ≈ **50/50 US/UK accents**
-4. Use all 5 voices across the unit; minimize any voice appearing in multiple sections
-5. Rotate role assignments between units (don't default Michael to male leads)
-6. Narrator: use the least-used voice
+4. **Scenario gender first** — 角色现实性别 > 凑 50/50 (⼠/护⼠不设为男声，建筑工人不设为⼥声)
+5. **Tier 1 voices first** — 主动选择高质量声线（≥ 60% Tier 1）; 新声线表见 §3a
+6. Rotate role assignments between units
+7. Narrator: use the least-used voice
+8. Tier ⚠ 声线 (Callum, Harry, Adam) 禁止使用
 
-**Example allocation:**
-| Section | Type | Voices used | G | A |
-|---------|------|------------|---|---|
-| S1 | Dialogue (2 char) | Bella (US,F) + Lily (UK,F) | F,F | US,UK |
-| S2 | Monologue | Michael (US,M) | M | US |
-| S3 | Dialogue (2 char) | Rachel (UK,F) + Matilda (US,F) | F,F | UK,US |
-| S4 | Lecture | Michael reused? No → use narr. Bella (US,F) | F | US |
-**Total:** 6 character slots → 5F, 1M → skewed. Adjust: S2=Michael, S4=Michael, swap S3 male voice.
-**Target:** ~3F, 3M or 4F, 2M across the unit's character slots.
+**See §3a above for the complete quality-tiered voice pool (18 voices) and scenario gender table.**

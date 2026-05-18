@@ -121,7 +121,31 @@ def validate(filepath):
     else:
         errors.append("Button classes MISSING")
     
-    # 8. HTML size
+    # 8. Fill-in question rendering
+    fill_inputs = re.findall(r'<input\s+class="fill-input"', html)
+    fill_q_blocks = re.findall(r'data-qtype="fill"', html)
+    if fill_q_blocks:
+        if fill_inputs:
+            passes.append(f"Fill-in inputs: {len(fill_inputs)} found for {len(fill_q_blocks)} fill questions")
+        else:
+            errors.append(f"FILL-IN INPUTS MISSING: {len(fill_q_blocks)} fill questions but no .fill-input elements")
+        # Check data-ans is not empty
+        empty_ans = re.findall(r'data-ans=""', html)
+        if empty_ans:
+            errors.append(f"EMPTY ANSWERS: {len(empty_ans)} fill-input(s) with empty data-ans")
+        else:
+            passes.append("All fill-inputs have non-empty data-ans")
+    
+    # 9. MCQ question rendering
+    mcq_blocks = re.findall(r'data-qtype="mcq_single"', html) + re.findall(r'data-qtype="mcq_multi"', html)
+    mcq_opts = re.findall(r'class="mcq-opt"', html)
+    if mcq_blocks:
+        if mcq_opts:
+            passes.append(f"MCQ options: {len(mcq_opts)} found for {len(mcq_blocks)} MCQ questions")
+        else:
+            errors.append(f"MCQ OPTIONS MISSING: {len(mcq_blocks)} MCQ questions but no .mcq-opt elements")
+    
+    # 10. HTML size
     passes.append(f"File size: {len(html):,} bytes")
     
     result = {
