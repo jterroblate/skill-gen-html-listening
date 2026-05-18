@@ -40,6 +40,54 @@ def render_fill(num, text, seg, answer=""):
 <button class="seek-btn-inline" onclick="playSegment({seg})">▶ 跳至音频</button>
 </div>'''
 
+
+def render_notes_layout(layout, questions_by_num):
+    """Render S4 notes as structured hierarchical document.
+    layout: dict with title + sections[]. Each section has heading + lines[].
+    lines have type "label" (no blank) or "blank" (text with {Q} markers).
+    questions_by_num: dict mapping qnum -> {answer, seg}
+    """
+    import re
+    html = '<div class="notes-container">'
+    
+    if layout.get("title"):
+        html += f'<div class="notes-title">{layout["title"]}</div>'
+    
+    for sec in layout.get("sections", []):
+        html += f'<div class="notes-heading">{sec.get("heading", "")}</div>'
+        for line in sec.get("lines", []):
+            lt = line.get("type", "blank")
+            text = line.get("text", "")
+            
+            if lt == "label":
+                html += f'<div class="notes-label">{text}</div>'
+            elif lt == "blank":
+                # Replace {Q} markers with input fields
+                def replace_q(m):
+                    qnum = int(m.group(1))
+                    info = questions_by_num.get(qnum, {})
+                    ans = info.get("answer", "")
+                    seg = info.get("seg", 0)
+                    q_class = "notes-blank"
+                    inp = f'<input class="fill-input notes-fill" data-ans="{ans}" data-q="{qnum}" placeholder="..." autocomplete="off">'
+                    return f'{inp}'
+                
+                filled = re.sub(r'\{(\d+)\}', replace_q, text)
+                html += f'<div class="notes-line">{filled}</div>'
+        
+        # Add seek buttons for this section
+        html += '<div class="notes-actions">'
+        for line in sec.get("lines", []):
+            if line.get("type") == "blank":
+                for m in re.finditer(r'\{(\d+)\}', line.get("text", "")):
+                    qnum = int(m.group(1))
+                    seg = questions_by_num.get(qnum, {}).get("seg", 0)
+                    html += f'<button class="seek-btn-notes" onclick="playSegment({seg})" title="Q{qnum}">🔊 Q{qnum}</button>'
+        html += '</div>'
+    
+    html += '</div>'
+    return html
+
 def render_mcq_single(num, stem, options, answer, seg):
     """Single-select radio buttons (A/B/C)."""
     opts_html = ""
@@ -67,7 +115,7 @@ def render_mcq_multi(num_label, stem, options, answers, seg):
 #  HTML builder
 # ──────────────────────────────────────────────
 
-def build_html(title, mp3_path, timing, questions, sentences, q_seg):
+def build_html(title, mp3_path, timing, questions, sentences, q_seg, notes_layout=None):
     segments_json = json.dumps(timing["segments"])
     total_sec = int(timing.get("total_duration", timing["segments"][-1]["end"]))
     total_min = total_sec // 60
@@ -76,14 +124,31 @@ def build_html(title, mp3_path, timing, questions, sentences, q_seg):
     
     s_js = json.dumps(sentences, ensure_ascii=False)
     
-    # Render all questions
+    # Build questions lookup for notes
+    questions_by_num = {}
+    for q in questions:
+        qnum = q["num"]
+        questions_by_num[qnum] = {
+            "answer": q.get("answer", ""),
+            "seg": q.get("seg", q_seg.get(str(qnum), 0)),
+        }
+    
+    # Render questions
+    layout_notes = ""
+    if notes_layout:
+        layout_notes = render_notes_layout(notes_layout, questions_by_num)
+    
     q_blocks = []
     for q in questions:
         qtype = q.get("type", "fill")
         num = q["num"]
         seg = q.get("seg", q_seg.get(str(num) if not isinstance(num, str) else num, 0))
         
-        if qtype == "mcq_single":
+        if notes_layout:
+            # In notes mode, still render hidden q-blocks for JS grading
+            # but hide them visually; notes layout handles display
+            q_blocks.append(render_fill(num, q["text"], seg, q.get("answer", "")))
+        elif qtype == "mcq_single":
             q_blocks.append(render_mcq_single(num, q["stem"], q["options"], q["answer"], seg))
         elif qtype == "mcq_multi":
             q_blocks.append(render_mcq_multi(num, q["stem"], q["options"], q["answer"], seg))
@@ -138,6 +203,16 @@ body{{background:var(--bg);color:var(--text);font-family:var(--font);line-height
 .fill-input.wrong{{border-bottom-color:var(--error);color:var(--error)}}
 {mcq_css}
 .seek-btn-inline{{display:inline-block;padding:2px 8px;margin-left:6px;border:1px solid var(--accent);border-radius:4px;background:none;cursor:pointer;font-size:10.5px;color:var(--accent);font-family:var(--ui-font);transition:.15s;vertical-align:middle;white-space:nowrap}}
+.notes-container .q-block{{display:none!important}}
+.notes-container{{padding:8px 0 16px 0}}
+.notes-title{{font-size:15px;font-weight:700;color:var(--text);font-family:var(--ui-font);margin-bottom:14px;padding-bottom:6px;border-bottom:2px solid var(--accent)}}
+.notes-heading{{font-size:13px;font-weight:600;color:var(--accent);font-family:var(--ui-font);margin:14px 0 6px 0;padding:4px 0}}
+.notes-label{{font-size:12px;color:var(--text2);font-family:var(--ui-font);margin:4px 0 2px 8px}}
+.notes-line{{font-size:13px;font-family:var(--ui-font);padding:6px 10px;margin:3px 0;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);line-height:1.9}}
+.notes-fill{{border-bottom-width:2px!important;padding:2px 6px!important;font-size:13px!important}}
+.notes-actions{{display:flex;gap:4px;margin:6px 0 8px 12px;flex-wrap:wrap}}
+.seek-btn-notes{{padding:2px 8px;border:1px solid var(--border);border-radius:4px;background:none;cursor:pointer;font-size:10px;color:var(--accent);font-family:var(--ui-font);transition:.15s}}
+.seek-btn-notes:hover{{background:var(--accent);color:#fff}}
 .seek-btn-inline:hover{{background:var(--accent);color:#fff}}
 .action-bar{{background:var(--card);border-top:1px solid var(--border);padding:10px 24px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;position:sticky;bottom:0;z-index:10}}
 .btn{{padding:7px 16px;border:none;border-radius:var(--radius);cursor:pointer;font-size:12.5px;font-family:var(--ui-font);font-weight:500;transition:.2s}}
@@ -168,6 +243,8 @@ body{{background:var(--bg);color:var(--text);font-family:var(--font);line-height
 
 <div class="panel active" id="panel_0">
 <div style="font-size:15px;font-weight:600;margin-bottom:16px;color:var(--accent);font-family:var(--ui-font)">{title}</div>
+
+{layout_notes}
 
 {q_html}
 
@@ -432,6 +509,7 @@ def main():
     parser.add_argument("--questions", required=True)
     parser.add_argument("--sentences", required=True)
     parser.add_argument("--q-seg", required=True)
+    parser.add_argument("--notes-layout", default=None)
     
     args = parser.parse_args()
     
@@ -440,7 +518,12 @@ def main():
     with open(args.sentences) as f: sentences = json.load(f)
     with open(args.q_seg) as f: q_seg = json.load(f)
     
-    html = build_html(args.title, args.mp3, timing, questions, sentences, q_seg)
+    notes_layout = None
+    if args.notes_layout and os.path.exists(args.notes_layout):
+        with open(args.notes_layout) as f:
+            notes_layout = json.load(f)
+    
+    html = build_html(args.title, args.mp3, timing, questions, sentences, q_seg, notes_layout)
     
     tmp_path = "/tmp/ielts_player_output.html"
     with open(tmp_path, "w") as f:
