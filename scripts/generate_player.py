@@ -114,6 +114,7 @@ body{{background:var(--bg);color:var(--text);font-family:var(--font);line-height
 .tab-btn:hover{{color:var(--accent)}}.tab-btn.active{{color:var(--accent);border-bottom-color:var(--accent);font-weight:600}}
 .player-bar{{background:var(--card);border-bottom:1px solid var(--border);padding:10px 24px;display:flex;align-items:center;gap:12px}}
 .player-bar audio{{flex:1;height:40px}}
+.player-bar .speed{{font-size:13px;font-weight:600;color:var(--accent);font-family:var(--ui-font);min-width:36px;text-align:center;cursor:pointer;user-select:none}}
 .player-bar .time{{font-size:12px;color:var(--text2);font-family:var(--ui-font);min-width:80px}}
 .content{{display:flex;height:calc(100vh - 145px);overflow:hidden}}
 .panel{{display:none;overflow-y:auto;padding:24px;width:100%}}
@@ -155,6 +156,7 @@ body{{background:var(--bg);color:var(--text);font-family:var(--font);line-height
   <audio id="audioPlayer" controls ontimeupdate="onTimeUpdate()">
     <source src="{mp3_path}" type="audio/mpeg">
   </audio>
+  <span class="speed" id="speedDisplay" onclick="cycleSpeed()">1.0x</span>
   <span class="time" id="timeDisplay">0:00 / {time_str}</span>
 </div>
 
@@ -188,6 +190,18 @@ const sentences = {s_js};
 
 var audio = document.getElementById("audioPlayer");
 var currentSegment = -1;
+var speeds = [0.5, 0.75, 1.0, 1.25, 1.5, 2.0];
+var speedIdx = 2;
+
+function updateSpeedDisplay() {{
+  document.getElementById("speedDisplay").textContent = speeds[speedIdx].toFixed(2).replace(/0$/, "").replace(/\.0$/, ".0") + "x";
+}}
+
+function cycleSpeed() {{
+  speedIdx = (speedIdx + 1) % speeds.length;
+  audio.playbackRate = speeds[speedIdx];
+  updateSpeedDisplay();
+}}
 
 // Build transcript
 var container = document.getElementById("transcriptContainer");
@@ -376,6 +390,30 @@ function optionChanged(el) {{
 }}
 
 audio.addEventListener("play", function() {{ onTimeUpdate(); }});
+
+document.addEventListener("keydown", function(e) {{
+  if (e.key === " " || e.code === "Space") {{
+    e.preventDefault();
+    if (audio.paused) audio.play();
+    else audio.pause();
+  }} else if (e.key === "ArrowLeft") {{
+    e.preventDefault();
+    if (currentSegment > 0) playFrom(currentSegment - 1);
+  }} else if (e.key === "ArrowRight") {{
+    e.preventDefault();
+    if (currentSegment < segments.length - 1) playFrom(currentSegment + 1);
+  }} else if (e.key === "ArrowUp") {{
+    e.preventDefault();
+    if (speedIdx < speeds.length - 1) speedIdx++;
+    audio.playbackRate = speeds[speedIdx];
+    updateSpeedDisplay();
+  }} else if (e.key === "ArrowDown") {{
+    e.preventDefault();
+    if (speedIdx > 0) speedIdx--;
+    audio.playbackRate = speeds[speedIdx];
+    updateSpeedDisplay();
+  }}
+}});
 </script>
 </body>
 </html>'''
@@ -408,8 +446,8 @@ def main():
     subprocess.run(["cp", tmp_path, args.output])
     
     size = len(html)
-    fn_count = sum(1 for fn in ["playFrom","highlightSegment","onTimeUpdate","switchMode","checkAnswers","revealAnswers","resetAnswers","playSegment"] if fn in html)
-    print(f"Generated: {args.output}\nSize: {size:,} bytes\nFunctions: {fn_count}/8")
+    fn_count = sum(1 for fn in ["playFrom","highlightSegment","onTimeUpdate","switchMode","checkAnswers","revealAnswers","resetAnswers","playSegment","cycleSpeed","updateSpeedDisplay"] if fn in html)
+    print(f"Generated: {args.output}\nSize: {size:,} bytes\nFunctions: {fn_count}/10")
 
 if __name__ == "__main__":
     main()

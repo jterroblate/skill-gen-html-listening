@@ -19,6 +19,13 @@ description: >
 This covers the full pipeline: script → questions → review → TTS → HTML → QC.
 Follow every step. Skipping a step WILL waste TTS credits (~$15-25/section) and cause bugs.
 
+### ⚠️ Cross-Check Rule (Manual Generation)
+When generating HTML manually (bypassing the `generate_player.py` script):
+1. Read this SKILL.md in full to identify ALL features the skill supports.
+2. Do NOT skip a feature because it's extra work (e.g., estimated segment timing).
+3. If a feature legitimately can't work without data we don't have, FLAG IT to the user explicitly — don't omit it silently.
+4. Generate a complete feature set first, then trim only if user confirms.
+
 ## Quick Start
 
 Given a completed IELTS listening session (script, questions, audio segments):
@@ -110,6 +117,20 @@ Every generated page must have exactly these functions:
 | `revealAnswers()` | 显示答案 button | Fill all answers, mark green |
 | `resetAnswers()` | 重置 button | Clear inputs, remove marks |
 | `playSegment(idx)` | 跳至音频 button | Seek audio, DON'T switch tabs |
+| `cycleSpeed()` | Click speed display | Cycle through playback speed (0.5x–2.0x) |
+| `updateSpeedDisplay()` | Internal | Update speed label text |
+
+## Keyboard Shortcuts
+| Key | Action |
+|-----|--------|
+| `Space` | Toggle play/pause |
+| `←` (ArrowLeft) | Jump to previous sentence |
+| `→` (ArrowRight) | Jump to next sentence |
+| `↑` (ArrowUp) | Increase playback speed |
+| `↓` (ArrowDown) | Decrease playback speed |
+
+Playback speed cycles through: `0.5x → 0.75x → 1.0x → 1.25x → 1.5x → 2.0x`.
+Speed can also be toggled by clicking the speed label in the player bar.
 
 ### Variable Scope
 - Use `var` (not `const`/`let`) for function-scoped variables to avoid block scoping issues
@@ -235,7 +256,7 @@ Prefer short English filenames on Desktop (`~/Desktop/`) and use `cp` to move th
 Before delivery, confirm:
 
 - [ ] Braces balanced: `python -c "print(open('file.html').read().count('{') == open('file.html').read().count('}'))"`
-- [ ] All 8 functions present (see Function Inventory table)
+- [ ] All 10 functions present (see Function Inventory table)
 - [ ] No orphaned code (indented `total++`, `inp.` outside functions)
 - [ ] All `onclick` targets exist as functions
 - [ ] Audio source path resolves relative to HTML location

@@ -4,9 +4,11 @@ Validate IELTS listening practice HTML output.
 
 Checks:
 - JS brace balance
-- All 8 required functions present
+- All 10 required functions present
 - No orphaned code outside functions
 - All onclick targets exist as functions
+- Keyboard shortcuts present (Space, arrow keys)
+- Speed control present (cycleSpeed, speed display)
 - Audio source path resolves
 - CSS variables defined
 - Tab labels correct
@@ -17,7 +19,8 @@ import sys, re, os
 
 REQUIRED_FUNCTIONS = [
     "playFrom", "highlightSegment", "onTimeUpdate", "switchMode",
-    "checkAnswers", "revealAnswers", "resetAnswers", "playSegment"
+    "checkAnswers", "revealAnswers", "resetAnswers", "playSegment",
+    "cycleSpeed", "updateSpeedDisplay"
 ]
 
 def validate(filepath):
@@ -94,13 +97,25 @@ def validate(filepath):
     else:
         errors.append("CSS variables MISSING")
     
-    # 6. Tab labels
+    # 6. Keyboard shortcuts
+    if 'keydown' in js and 'ArrowLeft' in js and 'ArrowRight' in js and 'key ===' in js:
+        passes.append("Keyboard shortcuts present (Space / ← → ↑ ↓)")
+    else:
+        errors.append("Keyboard shortcuts MISSING")
+    
+    # 7. Speed control
+    if 'speedDisplay' in js and 'cycleSpeed' in js and 'playbackRate' in js:
+        passes.append("Speed control present (cycleSpeed, speed display)")
+    else:
+        errors.append("Speed control MISSING")
+    
+    # 8. Tab labels
     if '刷题' in html and '精听' in html:
         passes.append("Tab labels: 刷题 / 精听")
     else:
         errors.append("Tab labels INCORRECT")
     
-    # 7. Button classes
+    # 9. Button classes
     if 'btn-primary' in html and 'btn-secondary' in html:
         passes.append("Button classes: btn-primary / btn-secondary")
     else:
