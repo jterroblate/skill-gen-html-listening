@@ -261,9 +261,12 @@ python scripts/validate_player.py "/path/to/UXX_日常节奏_听力_SX_刷题.ht
 - [ ] Button classes: btn-primary / btn-secondary
 - [ ] Title in English: `IELTS Listening · UXX Name`
 - [ ] Matching: uses click-match (not HTML5 Drag API)
-- [ ] Matching: options use onclick="ddClick(this)" and data-letter
-- [ ] Matching: zones use onclick="ddZone(this)" and data-correct
-- [ ] Matching: ddCheck, ddRev, ddRst exist and hooked to action buttons
+- [ ] Matching: post-process script applied (`apply_matching.py`)
+- [ ] Matching: 主容器 max-width ≤1280px
+- [ ] Matching: 右栏宽度 ≥280px，选项文本 `white-space:nowrap`
+- [ ] Matching: drop slot 宽度 180px，flex-shrink:0
+- [ ] Matching: Submit/Reveal/Reset 正常
+- [ ] Matching: 截图确认视觉比例（无右侧过窄、左侧过宽）
 - [ ] Matching: options store letter in data-placed (not charAt(0))
 
 ---
@@ -318,6 +321,9 @@ Run THIS checklist before delivering ANY listening set:
 [ ] Teacher DOCX matches student DOCX + answers inline
 [ ] Audio: 3-4 min per section, correct voices, no errors
 [ ] Scenario gender尊重: 每角色的性别符合现实场景（护士/护工≠男声）
+[ ] Matching 布局: 主容器 max-width ≤1280px, 右栏 ≥280px, 选项文本不换行
+[ ] Matching 功能: click-to-place + swap + Submit/Reveal/Reset 全部正常
+[ ] Matching 无残留: 截图确认无右侧过窄、左侧过宽、选项挤断行等问题
 [ ] Voice quality: 整单元 Tier 1 ≥ 60%, 无 Tier ⚠ 声线
 [ ] All HTMLs pass 8-point validation
 [ ] Files in correct directory (verify with `ls -la`)
